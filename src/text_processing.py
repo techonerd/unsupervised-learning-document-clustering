@@ -20,12 +20,12 @@ def read_positive_and_negative_word(data_folder):
     """
     positiveWords = []
     negativeWords = []
-    with open(data_folder+'positive.txt', 'r') as readFile:
+    with open(f'{data_folder}positive.txt', 'r') as readFile:
         for line in readFile:
             line = line.replace('\n','')
             positiveWords.append(line)
 
-    with open(data_folder+'negative.txt', 'r') as readFile:
+    with open(f'{data_folder}negative.txt', 'r') as readFile:
         for line in readFile:
             line = line.replace('\n','')
             negativeWords.append(line)
@@ -61,21 +61,17 @@ def lda_topic_modeling(content, topic_count):
     dictionary = corpora.Dictionary(content)
     # convert tokenized documents into a document-term matrix
     corpus = [dictionary.doc2bow(text) for text in content]
-    lda_model = gensim.models.ldamodel.LdaModel(corpus, num_topics=topic_count, id2word = dictionary, passes=20)
     #print(ldamodel.print_topics(num_topics=5, num_words=4))
-    return lda_model
+    return gensim.models.ldamodel.LdaModel(
+        corpus, num_topics=topic_count, id2word=dictionary, passes=20
+    )
 
 
 def tokenize_and_stem(text):
     # first tokenize by sentence, then by word to ensure that punctuation is caught as it's own token
     tokens = [word for sent in nltk.sent_tokenize(text) for word in nltk.word_tokenize(sent)]
-    filtered_tokens = []
-    # filter out any tokens not containing letters (e.g., numeric tokens, raw punctuation)
-    for token in tokens:
-        if re.search('[a-zA-Z]', token):
-            filtered_tokens.append(token)
-    stems = [stemmer.stem(t) for t in filtered_tokens]
-    return stems
+    filtered_tokens = [token for token in tokens if re.search('[a-zA-Z]', token)]
+    return [stemmer.stem(t) for t in filtered_tokens]
     
 def get_similarity_matrix(content_as_str):
     tfidf_vectorizer = TfidfVectorizer(max_df=0.8, max_features=200000, min_df=0.2,
