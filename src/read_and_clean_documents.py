@@ -10,14 +10,14 @@ directory = '../data/cleaned_data/'
 
 
 def read_authors_book_names():
-    with open(directory + 'authors.txt', "r") as f:
+    with open(f'{directory}authors.txt', "r") as f:
         authors = []
         for line in f:
             line_str = line.strip()
             authors.append(line_str)
     f.close()
 
-    with open(directory + 'books.txt', "r") as f:
+    with open(f'{directory}books.txt', "r") as f:
         books = []
         for line in f:
             line_str = line.strip()
@@ -26,13 +26,12 @@ def read_authors_book_names():
     return (books, authors)
 
 def write_list_to_file(file_name, content):
-    f = open(directory + file_name, 'a')
-    for list in content:
-        for item in list:
-            f.write(str(item))
-            f.write(' ')
-        f.write('\n')
-    f.close()
+    with open(directory + file_name, 'a') as f:
+        for list in content:
+            for item in list:
+                f.write(str(item))
+                f.write(' ')
+            f.write('\n')
 
 
 def read_from_cleaned_file(file_name):
@@ -73,12 +72,12 @@ def get_file_names(data_folder):
     Param_1: Data folder name as string
     Output_1: List of lists containng folder and file names
     """
-    folder_list = glob.glob(data_folder+"*")  # Get folder and file names names in a list
+    folder_list = glob.glob(f"{data_folder}*")
     folder_file_list = []
     for index,folder in enumerate(folder_list):
         folder_file_list.append([])
         folder_name = [ folder[folder.rfind('/') + 1 : ] ]  # Get folder name
-        file_names = glob.glob(folder+ '/*.html')  # Get html file names in a list
+        file_names = glob.glob(f'{folder}/*.html')
         file_names = sorted(file_names)
         folder_file_list[index].append(folder_name)
         folder_file_list[index].append(file_names)
@@ -97,10 +96,9 @@ def get_cleaned_html_documents(folder_file_list):
     cleaned_documents = []
     for item in folder_file_list:
         for file_name in item[1]:
-            f = open(file_name, "r")  # Open the file
-            x = f.read()  # Read file
-            html_parser.feed(x)  # Feed the file to get rid of html elements
-            f.close()  # Close the file
+            with open(file_name, "r") as f:
+                x = f.read()  # Read file
+                html_parser.feed(x)  # Feed the file to get rid of html elements
         plain_html_file = html_parser.html_plain_document  # Get the list of words
         cleaned_html_file = clean_list(plain_html_file)  # Clean the list
         cleaned_documents.append(cleaned_html_file)
@@ -129,9 +127,8 @@ def clean_list(list_to_clean):
         if len(item) < 3:  # If the length of item is lower than 3, remove item
             item = ''
         list_to_clean[index] = item  # Put item back to the list
-    cleaned_list = [elem for elem in list_to_clean if elem not in items_to_clean]
     # Remove empty items from the list
-    return cleaned_list
+    return [elem for elem in list_to_clean if elem not in items_to_clean]
 
 
 def remove_frequent_items(book_word_list, percentage):
@@ -162,5 +159,5 @@ def convert_list(content):
     for index, str_list in enumerate(content):
         converted_content.append('')
         for item in str_list:
-            converted_content[index] = converted_content[index] + ' ' + item
+            converted_content[index] = f'{converted_content[index]} {item}'
     return converted_content
